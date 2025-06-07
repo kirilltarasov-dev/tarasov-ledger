@@ -1,0 +1,18 @@
+[project]
+name = "tarasov-ledger"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "asyncpg>=0.30.0",
+    "fastapi>=0.115.12",
+    "greenlet>=3.2.3",
+    "pillow>=11.2.1",
+    "pytesseract>=0.3.13",
+    "python-dotenv>=1.1.0",
+    "python-multipart>=0.0.20",
+    "ruff>=0.11.13",
+    "sqlalchemy>=2.0.41",
+    "uvicorn>=0.34.3",
+]
