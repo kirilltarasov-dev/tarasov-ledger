@@ -13,3 +13,8 @@ class Transaction(Base):
     filename = Column(String, nullable=True)
     content_type = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    vendor = Column(String, nullable=True)
+    amount = Column(Float, nullable=True)
+    amount_currency = Column(String, nullable=True)
+    date = Column(DateTime, nullable=True)
+    category = Column(String, nullable=True)

@@ -1,34 +1,45 @@
-from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.models.transaction import Transaction
-from app.services.ocr import extract_text_from_image
+from app.services import ocr, parser
 from sqlalchemy.future import select
 import uuid
 
 router = APIRouter()
 
 
-@router.post("/")
+@router.post("/upload")
 async def upload_image(
     file: UploadFile = File(...), db: AsyncSession = Depends(get_db)
 ):
     if file.content_type not in ["image/jpeg", "image/png"]:
-        raise HTTPException(
-            status_code=400, detail="Only JPEG and PNG formats are supported"
-        )
+        raise HTTPException(status_code=400, detail="Invalid image type")
 
-    content = await file.read()
-    raw_text = extract_text_from_image(content)
+    contents = await file.read()
+    raw_text = ocr.extract_text_from_image(contents)
+    parsed = parser.parse_text(raw_text)
 
-    transaction = Transaction(
+    tx = Transaction(
         id=uuid.uuid4(),
         raw_text=raw_text,
         filename=file.filename,
         content_type=file.content_type,
+        vendor=parsed.vendor,
+        amount=parsed.amount,
+        amount_currency=parsed.amount_currency,
+        date=parsed.date,
+        category=parsed.category,
     )
-    db.add(transaction)
+    db.add(tx)
     await db.commit()
-    await db.refresh(transaction)
-
-    return {"id": str(transaction.id), "raw_text": raw_text}
+    await db.refresh(tx)
+    return {
+        "id": str(tx.id),
+        "raw_text": tx.raw_text,
+        "vendor": tx.vendor,
+        "amount": tx.amount,
+        "amount_currency": tx.amount_currency,
+        "date": tx.date,
+        "category": tx.category,
+    }
